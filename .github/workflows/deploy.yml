@@ -3,31 +3,32 @@ name: Deploy to Kubernetes
 on:
   push:
     branches:
-      - master  # Change if you're using a different branch
+      - master
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Kubectl
+      - name: Setup kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: 'latest' # or specify a version
+          version: v1.30  # Adjust based on your cluster version
 
-      - name: Authenticate with Kubernetes
+      - name: Authenticate kubectl (GKE Example)
         run: |
-          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > kubeconfig.yaml
-          export KUBECONFIG=kubeconfig.yaml
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
 
-      - name: Deploy Application
+      - name: Apply Kubernetes manifests
         run: |
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/service.yaml
           kubectl rollout status deployment my-app
+
 
       - name: Verify Deployment
         run: |
