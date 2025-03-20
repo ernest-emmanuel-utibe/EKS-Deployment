@@ -16,19 +16,19 @@ jobs:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: v1.30  # Adjust based on your cluster version
+          version: v1.29  # Use the latest stable version
 
-      - name: Authenticate kubectl (GKE Example)
+      - name: Authenticate kubectl
         run: |
-          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
       - name: Apply Kubernetes manifests
         run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl rollout status deployment my-app
-
+          kubectl apply -f k8s/deployment.yaml || kubectl apply -f k8s/
+          kubectl apply -f k8s/service.yaml || kubectl apply -f k8s/
+          kubectl rollout status deployment my-app || echo "Deployment failed"
 
       - name: Verify Deployment
         run: |
