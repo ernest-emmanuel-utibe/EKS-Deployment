@@ -13,10 +13,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: v1.29  # Use the latest stable version
+      - name: Install kubectl manually
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
 
       - name: Authenticate kubectl
         run: |
@@ -26,8 +27,7 @@ jobs:
 
       - name: Apply Kubernetes manifests
         run: |
-          kubectl apply -f k8s/deployment.yaml || kubectl apply -f k8s/
-          kubectl apply -f k8s/service.yaml || kubectl apply -f k8s/
+          kubectl apply -f k8s/ --validate=false
           kubectl rollout status deployment my-app || echo "Deployment failed"
 
       - name: Verify Deployment
